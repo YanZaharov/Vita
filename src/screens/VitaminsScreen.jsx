@@ -41,7 +41,9 @@ const VitaminsScreen = ({ navigation }) => {
 			<Text style={styles.title}>Список витаминов</Text>
 			<FlatList
 				data={vitamins}
-				keyExtractor={item => item.id.toString()}
+				keyExtractor={item =>
+					item.id ? item.id.toString() : Date.now().toString()
+				} // гарантия резервного ключа
 				renderItem={({ item }) => (
 					<VitaminItem
 						vitamin={item}

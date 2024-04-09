@@ -1,16 +1,12 @@
 import React from 'react'
 import { Picker, StyleSheet, View } from 'react-native'
 
-const CustomPicker = ({ selectedValue, onValueChange, items }) => {
+const CustomPicker = ({ data, onValueChange }) => {
 	return (
 		<View style={styles.pickerContainer}>
-			<Picker
-				selectedValue={selectedValue}
-				onValueChange={onValueChange}
-				mode='dropdown'
-			>
-				{items.map((item, index) => (
-					<Picker.Item key={index} label={item.label} value={item.value} />
+			<Picker onValueChange={onValueChange}>
+				{data.map(item => (
+					<Picker.Item key={item.value} label={item.label} value={item.value} />
 				))}
 			</Picker>
 		</View>
@@ -20,11 +16,9 @@ const CustomPicker = ({ selectedValue, onValueChange, items }) => {
 const styles = StyleSheet.create({
 	pickerContainer: {
 		borderWidth: 1,
-		borderColor: '#ddd',
-		borderRadius: 8,
-		marginVertical: 10,
-		backgroundColor: 'white',
-		justifyContent: 'center',
+		borderColor: 'gray',
+		borderRadius: 4,
+		marginVertical: 8,
 	},
 })
 

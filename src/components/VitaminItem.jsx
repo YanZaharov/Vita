@@ -1,33 +1,26 @@
 import React from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { globalStyles } from '../styles/globalStyles'
 
-const VitaminItem = ({ vitamin, onEdit, onDelete }) => {
-	// Получение дозировки витамина и преобразование в строку с суффиксом 'mg', если это необходимо
-	// Приведенный ниже код предполагает, что дозировка уже включает единицу измерения 'mg'.
-	const dosageText = vitamin.dosage.includes('mg')
-		? vitamin.dosage
-		: `${vitamin.dosage} mg`
+const VitaminItem = ({ vitamin, onDelete, onEdit }) => {
+	// Здесь предполагается что объект vitamin содержит все необходимые свойства
+	const { name, dosage, color, startDate, endDate } = vitamin
 
 	return (
-		<View style={globalStyles.listItem}>
+		<View style={[styles.container, { borderColor: color || '#000' }]}>
 			<View style={styles.infoContainer}>
-				<Text style={globalStyles.listItemText}>{vitamin.name}</Text>
-				{/* Используйте dosageText для отображения дозировки */}
-				<Text style={globalStyles.listItemText}>{dosageText}</Text>
+				<Text style={styles.name}>{name || 'Unnamed Vitamin'}</Text>
+				<Text style={styles.dosage}>
+					{dosage ? `${dosage} mg` : 'Dosage not set'}
+				</Text>
+				<Text>From: {startDate}</Text>
+				<Text>To: {endDate}</Text>
 			</View>
-			<View style={styles.buttonContainer}>
-				<TouchableOpacity
-					onPress={() => onEdit(vitamin)}
-					style={globalStyles.button}
-				>
-					<Text style={globalStyles.buttonText}>Edit</Text>
+			<View style={styles.buttonsContainer}>
+				<TouchableOpacity onPress={onEdit} style={styles.button}>
+					<Text>Edit</Text>
 				</TouchableOpacity>
-				<TouchableOpacity
-					onPress={() => onDelete(vitamin.id)}
-					style={[globalStyles.button, globalStyles.deleteButton]}
-				>
-					<Text style={globalStyles.buttonText}>Delete</Text>
+				<TouchableOpacity onPress={onDelete} style={styles.button}>
+					<Text>Delete</Text>
 				</TouchableOpacity>
 			</View>
 		</View>
@@ -35,15 +28,39 @@ const VitaminItem = ({ vitamin, onEdit, onDelete }) => {
 }
 
 const styles = StyleSheet.create({
+	container: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		padding: 16,
+		marginVertical: 8,
+		borderWidth: 1,
+		borderColor: '#ddd', // You might use color prop here if it is defined
+		backgroundColor: '#fff',
+		borderRadius: 8,
+	},
 	infoContainer: {
 		flex: 1,
-		marginRight: 8,
 	},
-	buttonContainer: {
+	name: {
+		fontSize: 18,
+		fontWeight: 'bold',
+	},
+	dosage: {
+		fontSize: 14,
+		color: 'grey',
+	},
+	buttonsContainer: {
 		flexDirection: 'row',
+		padding: 10,
 		alignItems: 'center',
 	},
-	// ...другие стили, если они есть
+	button: {
+		marginLeft: 8,
+		backgroundColor: '#ddd',
+		padding: 10,
+		borderRadius: 5,
+	},
 })
 
 export default VitaminItem

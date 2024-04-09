@@ -23,7 +23,6 @@ const App = () => {
 					options={{ headerShown: false }}
 				/>
 				<Stack.Screen name='AddEditVitamin' component={AddEditVitaminScreen} />
-				{/* Можете добавить дополнительные экраны, если необходимо */}
 			</Stack.Navigator>
 		</NavigationContainer>
 	)

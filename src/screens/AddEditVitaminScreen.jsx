@@ -1,44 +1,44 @@
+import DateTimePicker from '@react-native-community/datetimepicker'
+import { Picker } from '@react-native-picker/picker' // Убедитесь, что пакет установлен
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, Text, TextInput, View } from 'react-native'
-import CustomButton from '../components/CustomButton' // Удостоверьтесь, что этот компонент импортирован
+import { Button, StyleSheet, TextInput, View } from 'react-native'
 import { useVitaminStore } from '../store/vitaminStore'
 import { globalStyles } from '../styles/globalStyles'
 
-const AddEditVitaminScreen = ({ route, navigation }) => {
-	const vitaminId = route.params?.vitaminId
-	const isEdit = Boolean(vitaminId) // Булев флаг для проверки, редактируем мы или добавляем витамин
+const AddEditVitaminScreen = ({ navigation, route }) => {
+	const { vitaminId } = route.params || {}
+	const isEdit = Boolean(vitaminId)
+	const { addVitamin, updateVitamin, vitamins } = useVitaminStore()
 	const [name, setName] = useState('')
 	const [dosage, setDosage] = useState('')
+	const [startDate, setStartDate] = useState(new Date())
+	const [endDate, setEndDate] = useState(new Date())
+	const [color, setColor] = useState('red')
+	const [showStartDatePicker, setShowStartDatePicker] = useState(false)
+	const [showEndDatePicker, setShowEndDatePicker] = useState(false)
 
-	const { addVitamin, updateVitamin, vitamins } = useVitaminStore()
-
-	// Если мы в режиме редактирования, загрузим инфо о витамине
 	useEffect(() => {
-		if (isEdit) {
+		if (isEdit && vitamins) {
 			const vitamin = vitamins.find(v => v.id === vitaminId)
-			setName(vitamin?.name || '')
-			setDosage(vitamin?.dosage.replace(/[^0-9]/g, '') || '') // Удаляем mg при редактировании
+			if (vitamin) {
+				setName(vitamin.name || '')
+				setDosage(vitamin.dosage || '')
+				setStartDate(new Date(vitamin.startDate) || new Date())
+				setEndDate(new Date(vitamin.endDate) || new Date())
+				setColor(vitamin.color || 'red')
+			}
 		}
 	}, [vitaminId, vitamins])
 
-	// const saveVitamin = () => {
-	// 	const vitaminData = {
-	// 		id: isEdit ? vitaminId : Date.now().toString(),
-	// 		name,
-	// 		dosage: `${dosage} mg`, // Добавляем "mg" к значение дозировки
-	// 	}
-
-	// 	if (isEdit) {
-	// 		updateVitamin(vitaminId, vitaminData)
-	// 	} else {
-	// 		addVitamin(vitaminData)
-	// 	}
-
-	// 	navigation.goBack()
-	// }
 	const handleSave = () => {
-		// Предполагается, что dosage имеет числовое значение
-		const vitaminData = { name, dosage: `${dosage} mg` }
+		const vitaminData = {
+			id: isEdit ? vitaminId : Date.now().toString(),
+			name,
+			dosage,
+			startDate: startDate.toISOString(),
+			endDate: endDate.toISOString(),
+			color,
+		}
 		if (isEdit) {
 			updateVitamin(vitaminId, vitaminData)
 		} else {
@@ -47,44 +47,74 @@ const AddEditVitaminScreen = ({ route, navigation }) => {
 		navigation.goBack()
 	}
 
-	const handleDosageInput = text => {
-		if (/^\d*$/.test(text)) {
-			// Разрешаем только числа
-			setDosage(text)
-		}
-	}
-
 	return (
 		<View style={globalStyles.container}>
-			<Text style={globalStyles.title}>Редактирование витамина</Text>
-			<Text style={styles.label}>Название:</Text>
+			{/* Inputs for name and dosage */}
 			<TextInput
+				style={globalStyles.input}
 				value={name}
 				onChangeText={setName}
-				style={globalStyles.input}
+				placeholder='Vitamin Name'
 			/>
-			<Text style={styles.label}>Дозировка (в мг):</Text>
 			<TextInput
-				value={dosage}
-				onChangeText={handleDosageInput}
 				style={globalStyles.input}
+				value={dosage}
+				onChangeText={setDosage}
 				keyboardType='numeric'
+				placeholder='Dosage'
 			/>
-			<CustomButton
-				title={isEdit ? 'Обновить' : 'Добавить'}
-				// onPress={saveVitamin}
-				onPress={handleSave}
-			/>
+
+			{/* DateTimePicker for startDate */}
+			<Button title='Start Date' onPress={() => setShowStartDatePicker(true)} />
+			{showStartDatePicker && (
+				<DateTimePicker
+					value={startDate}
+					mode='date'
+					display='default'
+					onChange={(event, date) => {
+						setShowStartDatePicker(false)
+						if (date) setStartDate(date)
+					}}
+				/>
+			)}
+
+			{/* DateTimePicker for endDate */}
+			<Button title='End Date' onPress={() => setShowEndDatePicker(true)} />
+			{showEndDatePicker && (
+				<DateTimePicker
+					value={endDate}
+					mode='date'
+					display='default'
+					onChange={(event, date) => {
+						setShowEndDatePicker(false)
+						if (date) setEndDate(date)
+					}}
+				/>
+			)}
+
+			{/* Picker for selecting color */}
+			<Picker
+				selectedValue={color}
+				onValueChange={setColor}
+				style={styles.pickerStyle}
+			>
+				<Picker.Item label='Red' value='red' />
+				<Picker.Item label='Blue' value='blue' />
+				<Picker.Item label='Green' value='green' />
+				{/* Добавьте другие цвета по необходимости */}
+			</Picker>
+
+			{/* Button to save vitamin */}
+			<Button title='Save Vitamin' onPress={handleSave} />
 		</View>
 	)
 }
 
 const styles = StyleSheet.create({
-	label: {
-		fontSize: 16,
-		marginBottom: 5,
+	pickerStyle: {
+		width: '100%',
+		height: 50,
 	},
-	// Если нужны другие стили, добавьте их здесь
 })
 
 export default AddEditVitaminScreen
