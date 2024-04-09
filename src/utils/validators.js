@@ -1,7 +1,12 @@
-export const validateVitamin = vitamin => {
-	// Implement your validation logic here
-	if (!vitamin.name || !vitamin.quantity || !vitamin.unit) {
-		return false
+export const validateVitaminInput = vitamin => {
+	let errors = {}
+	if (!vitamin.name) {
+		errors.name = 'Name is required.'
 	}
-	return true
+	if (!vitamin.dosage) {
+		errors.dosage = 'Dosage is required.'
+	} else if (isNaN(vitamin.dosage)) {
+		errors.dosage = 'Dosage must be a number.'
+	}
+	return errors
 }

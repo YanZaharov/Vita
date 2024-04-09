@@ -1,20 +1,32 @@
 import { NavigationContainer } from '@react-navigation/native'
+import { createStackNavigator } from '@react-navigation/stack'
 import React, { useEffect } from 'react'
-import { StatusBar, View } from 'react-native'
 import BottomTabNavigator from './navigation/BottomTabNavigator'
-import { globalStyles } from './styles/globalStyles'
+import AddEditVitaminScreen from './screens/AddEditVitaminScreen'
+import { useVitaminStore } from './store/vitaminStore'
 
-export default function App() {
+const Stack = createStackNavigator()
+
+const App = () => {
+	const loadVitamins = useVitaminStore(state => state.loadVitamins)
+
 	useEffect(() => {
-		// Additional app setup if necessary
-	}, [])
+		loadVitamins()
+	}, [loadVitamins])
 
 	return (
 		<NavigationContainer>
-			<StatusBar barStyle='dark-content' />
-			<View style={globalStyles.container}>
-				<BottomTabNavigator />
-			</View>
+			<Stack.Navigator initialRouteName='Home'>
+				<Stack.Screen
+					name='Root'
+					component={BottomTabNavigator}
+					options={{ headerShown: false }}
+				/>
+				<Stack.Screen name='AddEditVitamin' component={AddEditVitaminScreen} />
+				{/* Можете добавить дополнительные экраны, если необходимо */}
+			</Stack.Navigator>
 		</NavigationContainer>
 	)
 }
+
+export default App
