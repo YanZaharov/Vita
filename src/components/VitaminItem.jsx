@@ -1,26 +1,37 @@
 import React from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
+const formatDate = dateString => {
+	const date = new Date(dateString)
+	if (isNaN(date.getTime())) {
+		return 'Неверная дата'
+	}
+	return date.toLocaleDateString('ru-RU', {
+		day: '2-digit',
+		month: '2-digit',
+		year: 'numeric',
+	})
+}
+
 const VitaminItem = ({ vitamin, onDelete, onEdit }) => {
-	// Здесь предполагается что объект vitamin содержит все необходимые свойства
 	const { name, dosage, color, startDate, endDate } = vitamin
 
 	return (
 		<View style={[styles.container, { borderColor: color || '#000' }]}>
 			<View style={styles.infoContainer}>
-				<Text style={styles.name}>{name || 'Unnamed Vitamin'}</Text>
+				<Text style={styles.name}>{name || 'Без названия'}</Text>
 				<Text style={styles.dosage}>
-					{dosage ? `${dosage} mg` : 'Dosage not set'}
+					{dosage ? `${dosage} мг` : 'Дозировка не указана'}
 				</Text>
-				<Text>From: {startDate}</Text>
-				<Text>To: {endDate}</Text>
+				<Text>Начало: {formatDate(startDate)}</Text>
+				<Text>Конец: {formatDate(endDate)}</Text>
 			</View>
 			<View style={styles.buttonsContainer}>
 				<TouchableOpacity onPress={onEdit} style={styles.button}>
-					<Text>Edit</Text>
+					<Text>Изменить</Text>
 				</TouchableOpacity>
 				<TouchableOpacity onPress={onDelete} style={styles.button}>
-					<Text>Delete</Text>
+					<Text>Удалить</Text>
 				</TouchableOpacity>
 			</View>
 		</View>
@@ -35,7 +46,7 @@ const styles = StyleSheet.create({
 		padding: 16,
 		marginVertical: 8,
 		borderWidth: 1,
-		borderColor: '#ddd', // You might use color prop here if it is defined
+		borderColor: '#ddd',
 		backgroundColor: '#fff',
 		borderRadius: 8,
 	},

@@ -1,9 +1,18 @@
 import DateTimePicker from '@react-native-community/datetimepicker'
-import { Picker } from '@react-native-picker/picker' // Убедитесь, что пакет установлен
-import React, { useEffect, useState } from 'react'
+import { Picker } from '@react-native-picker/picker'
+import React, { useEffect, useLayoutEffect, useState } from 'react'
 import { Button, StyleSheet, TextInput, View } from 'react-native'
 import { useVitaminStore } from '../store/vitaminStore'
 import { globalStyles } from '../styles/globalStyles'
+
+// Функция для форматирования даты в формате ДД.ММ.ГГГГ
+const formatDate = date => {
+	return date.toLocaleDateString('ru-RU', {
+		day: '2-digit',
+		month: '2-digit',
+		year: 'numeric',
+	})
+}
 
 const AddEditVitaminScreen = ({ navigation, route }) => {
 	const { vitaminId } = route.params || {}
@@ -16,6 +25,12 @@ const AddEditVitaminScreen = ({ navigation, route }) => {
 	const [color, setColor] = useState('red')
 	const [showStartDatePicker, setShowStartDatePicker] = useState(false)
 	const [showEndDatePicker, setShowEndDatePicker] = useState(false)
+
+	useLayoutEffect(() => {
+		navigation.setOptions({
+			headerTitle: isEdit ? 'Редактировать витамин' : 'Добавить новый витамин',
+		})
+	}, [navigation, isEdit])
 
 	useEffect(() => {
 		if (isEdit && vitamins) {
@@ -30,82 +45,98 @@ const AddEditVitaminScreen = ({ navigation, route }) => {
 		}
 	}, [vitaminId, vitamins])
 
+	const onDateChange = (event, selectedDate, type) => {
+		if (type === 'start') {
+			setShowStartDatePicker(false)
+			if (selectedDate) {
+				setStartDate(selectedDate)
+			}
+		} else {
+			setShowEndDatePicker(false)
+			if (selectedDate) {
+				setEndDate(selectedDate)
+			}
+		}
+	}
+
 	const handleSave = () => {
 		const vitaminData = {
-			id: isEdit ? vitaminId : Date.now().toString(),
+			id: isEdit ? vitaminId : Date.now().toString(), // Простое генерирование ID, замените на более подходящий метод
 			name,
 			dosage,
-			startDate: startDate.toISOString(),
-			endDate: endDate.toISOString(),
+			startDate: startDate.toISOString(), // Сохраняем дату в виде строки в формате ISO
+			endDate: endDate.toISOString(), // Тоже самое с endDate
 			color,
 		}
+
 		if (isEdit) {
 			updateVitamin(vitaminId, vitaminData)
 		} else {
 			addVitamin(vitaminData)
 		}
+
 		navigation.goBack()
 	}
 
 	return (
 		<View style={globalStyles.container}>
-			{/* Inputs for name and dosage */}
 			<TextInput
 				style={globalStyles.input}
 				value={name}
 				onChangeText={setName}
-				placeholder='Vitamin Name'
+				placeholder='Название витамина'
 			/>
 			<TextInput
 				style={globalStyles.input}
 				value={dosage}
 				onChangeText={setDosage}
 				keyboardType='numeric'
-				placeholder='Dosage'
+				placeholder='Дозировка'
 			/>
-
-			{/* DateTimePicker for startDate */}
-			<Button title='Start Date' onPress={() => setShowStartDatePicker(true)} />
+			<Button
+				title={`Дата начала: ${
+					startDate ? formatDate(startDate) : 'не выбрана'
+				}`}
+				onPress={() => setShowStartDatePicker(true)}
+			/>
 			{showStartDatePicker && (
 				<DateTimePicker
 					value={startDate}
 					mode='date'
 					display='default'
-					onChange={(event, date) => {
-						setShowStartDatePicker(false)
-						if (date) setStartDate(date)
-					}}
+					onChange={(event, selectedDate) =>
+						onDateChange(event, selectedDate, 'start')
+					}
 				/>
 			)}
 
-			{/* DateTimePicker for endDate */}
-			<Button title='End Date' onPress={() => setShowEndDatePicker(true)} />
+			<Button
+				title={`Дата окончания: ${
+					endDate ? formatDate(endDate) : 'не выбрана'
+				}`}
+				onPress={() => setShowEndDatePicker(true)}
+			/>
 			{showEndDatePicker && (
 				<DateTimePicker
 					value={endDate}
 					mode='date'
 					display='default'
-					onChange={(event, date) => {
-						setShowEndDatePicker(false)
-						if (date) setEndDate(date)
-					}}
+					onChange={(event, selectedDate) =>
+						onDateChange(event, selectedDate, 'end')
+					}
 				/>
 			)}
-
-			{/* Picker for selecting color */}
 			<Picker
 				selectedValue={color}
 				onValueChange={setColor}
 				style={styles.pickerStyle}
 			>
-				<Picker.Item label='Red' value='red' />
-				<Picker.Item label='Blue' value='blue' />
-				<Picker.Item label='Green' value='green' />
+				<Picker.Item label='Красный' value='red' />
+				<Picker.Item label='Синий' value='blue' />
+				<Picker.Item label='Зелёный' value='green' />
 				{/* Добавьте другие цвета по необходимости */}
 			</Picker>
-
-			{/* Button to save vitamin */}
-			<Button title='Save Vitamin' onPress={handleSave} />
+			<Button title='Сохранить витамин' onPress={handleSave} />
 		</View>
 	)
 }
@@ -115,6 +146,7 @@ const styles = StyleSheet.create({
 		width: '100%',
 		height: 50,
 	},
+	// Добавьте любые дополнительные стили, если это необходимо
 })
 
 export default AddEditVitaminScreen

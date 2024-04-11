@@ -20,12 +20,12 @@ const VitaminsScreen = ({ navigation }) => {
 
 	const handleDeleteVitamin = vitaminId => {
 		Alert.alert(
-			'Delete Vitamin',
-			'Are you sure you want to remove this vitamin from your list?',
+			'Удалить витамин',
+			'Вы уверены, что хотите удалить этот витамин из списка?',
 			[
-				{ text: 'Cancel', style: 'cancel' },
+				{ text: 'Отмена', style: 'cancel' },
 				{
-					text: 'Delete',
+					text: 'Удалить',
 					onPress: async () => {
 						await removeVitamin(vitaminId)
 						loadVitamins()
@@ -38,12 +38,10 @@ const VitaminsScreen = ({ navigation }) => {
 
 	return (
 		<View style={globalStyles.container}>
-			<Text style={styles.title}>Список витаминов</Text>
+			<Text style={styles.title}>Список Витаминов</Text>
 			<FlatList
 				data={vitamins}
-				keyExtractor={item =>
-					item.id ? item.id.toString() : Date.now().toString()
-				} // гарантия резервного ключа
+				keyExtractor={(item, index) => `vitamin-${item.id.toString()}-${index}`} // Гарантируем, что ключ - это строка
 				renderItem={({ item }) => (
 					<VitaminItem
 						vitamin={item}
@@ -54,7 +52,7 @@ const VitaminsScreen = ({ navigation }) => {
 				contentContainerStyle={styles.listContent}
 			/>
 			<CustomButton
-				title='Add New Vitamin'
+				title='Добавить новый витамин'
 				onPress={() =>
 					navigation.navigate('AddEditVitamin', { vitaminId: null })
 				}
@@ -68,13 +66,13 @@ const styles = StyleSheet.create({
 		fontSize: 22,
 		fontWeight: 'bold',
 		marginTop: 16,
-		marginBottom: 32, // Увеличиваем нижний отступ перед списком витаминов
-		textAlign: 'center', // Центрируем заголовок
+		marginBottom: 32,
+		textAlign: 'center',
 	},
 	listContent: {
-		paddingBottom: 16, // Добавляем нижний "padding" для списка
+		paddingBottom: 16,
 	},
-	// Внести дополнительные стилизации, если они необходимы
+	// ...остальные стили...
 })
 
 export default VitaminsScreen

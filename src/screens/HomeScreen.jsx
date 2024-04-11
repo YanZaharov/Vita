@@ -6,7 +6,6 @@ import { globalStyles } from '../styles/globalStyles'
 const HomeScreen = ({ navigation }) => {
 	return (
 		<View style={[globalStyles.container, styles.screen]}>
-			{/* Отцентруем текст по высоте, используя justifyContent: 'center' */}
 			<View style={styles.content}>
 				<Text style={styles.welcomeText}>Добро пожаловать в</Text>
 				<Text style={styles.vitaText}>
@@ -16,6 +15,10 @@ const HomeScreen = ({ navigation }) => {
 					title='Перейти к витаминам'
 					onPress={() => navigation.navigate('Vitamins')}
 				/>
+				{/* Добавленный ниже текст предупреждения */}
+				<Text style={styles.disclaimer}>
+					*Перед приемом витаминов проконсультируйтесь со специалистом
+				</Text>
 			</View>
 		</View>
 	)
@@ -41,7 +44,12 @@ const styles = StyleSheet.create({
 		marginBottom: 30,
 		textAlign: 'center',
 	},
-	// ...другие стили если нужно
+	disclaimer: {
+		marginTop: 20,
+		fontSize: 12, // Меньший размер относительно основного текста
+		color: '#999', // Цвет, не привлекающий излишнего внимания
+		textAlign: 'center',
+	},
 })
 
 export default HomeScreen
