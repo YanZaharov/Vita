@@ -5,22 +5,29 @@ import VitaminItem from '../components/VitaminItem'
 import { useVitaminStore } from '../store/vitaminStore'
 import { globalStyles } from '../styles/globalStyles'
 
-const CalendarScreen = () => {
+const CalendarScreen = ({ navigation }) => {
 	const { vitamins, loadVitamins, removeVitamin } = useVitaminStore()
 	const [selectedDate, setSelectedDate] = useState(
-		new Date().toISOString().split('T')[0]
+		new Date().toISOString().split('T')[0] // Оставляем так для единообразия markedDates
 	)
 
 	useEffect(() => {
 		loadVitamins()
-	}, [loadVitamins])
+	}, [])
+
+	const getUTCDate = dateString => {
+		const date = new Date(dateString)
+		return new Date(
+			Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+		)
+	}
 
 	const filterVitaminsForSelectedDay = (vitamins, date) => {
+		const selectedUTC = getUTCDate(date)
 		return vitamins.filter(vitamin => {
-			const start = new Date(vitamin.startDate).setHours(0, 0, 0, 0)
-			const end = new Date(vitamin.endDate).setHours(0, 0, 0, 0)
-			const selected = new Date(date).setHours(0, 0, 0, 0)
-			return selected >= start && selected <= end
+			const startUTC = getUTCDate(vitamin.startDate)
+			const endUTC = getUTCDate(vitamin.endDate)
+			return selectedUTC >= startUTC && selectedUTC <= endUTC
 		})
 	}
 
@@ -30,12 +37,19 @@ const CalendarScreen = () => {
 	)
 
 	const markedDates = vitamins.reduce((acc, vitamin) => {
-		const start = new Date(vitamin.startDate)
-		const end = new Date(vitamin.endDate)
-		for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-			const dateString = d.toISOString().split('T')[0]
-			acc[dateString] = { marked: true }
+		let startUTC = dateToUTC(new Date(vitamin.startDate))
+		let endUTC = dateToUTC(new Date(vitamin.endDate))
+
+		while (startUTC <= endUTC) {
+			let dateString = formatDateToYYYYMMDD(startUTC)
+
+			if (!acc[dateString]) acc[dateString] = { dots: [] }
+			if (acc[dateString].dots.length < 5) {
+				acc[dateString].dots.push({ color: vitamin.color || '#00adf5' })
+			}
+			startUTC = new Date(startUTC.setDate(startUTC.getDate() + 1))
 		}
+
 		return acc
 	}, {})
 
@@ -43,17 +57,19 @@ const CalendarScreen = () => {
 		setSelectedDate(day.dateString)
 	}
 
-	const handleRemoveVitamin = id => {
+	const handleRemoveVitamin = async id => {
 		Alert.alert(
-			'Delete Vitamin',
-			'Are you sure you want to remove this vitamin?',
+			'Удалить витамин',
+			'Вы уверены, что хотите удалить этот витамин?',
 			[
-				{ text: 'Cancel' },
+				{ text: 'Отмена', style: 'cancel' },
 				{
-					text: 'OK',
-					onPress: () => {
-						removeVitamin(id)
+					text: 'Удалить',
+					onPress: async () => {
+						await removeVitamin(id) // Асинхронно удаляем витамин
+						await loadVitamins() // Затем асинхронно загружаем обновленный список витаминов
 					},
+					style: 'destructive',
 				},
 			]
 		)
@@ -65,13 +81,18 @@ const CalendarScreen = () => {
 				selectedDate={selectedDate}
 				onDayPress={handleDayPress}
 				markedDates={markedDates}
+				firstDay={1} // Начало недели с понедельника
+				markingType={'multi-dot'} // Тип маркировки, поддерживающий множественные точки
 			/>
 			<FlatList
 				data={vitaminsForSelectedDay}
-				keyExtractor={item => item.id}
+				keyExtractor={item => item.id.toString()}
 				renderItem={({ item }) => (
 					<VitaminItem
 						vitamin={item}
+						onEdit={() =>
+							navigation.navigate('AddEditVitamin', { vitaminId: item.id })
+						}
 						onDelete={() => handleRemoveVitamin(item.id)}
 					/>
 				)}
@@ -81,7 +102,21 @@ const CalendarScreen = () => {
 }
 
 const styles = StyleSheet.create({
-	// Стили для компонента CalendarScreen, если они вам нужны
+	// ...определения стилей, если необходимы...
+	container: {
+		flex: 1,
+	},
 })
+
+const dateToUTC = date => {
+	return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+}
+
+const formatDateToYYYYMMDD = date => {
+	const y = `${date.getUTCFullYear()}`
+	const m = `${date.getUTCMonth() + 1}`.padStart(2, '0')
+	const d = `${date.getUTCDate()}`.padStart(2, '0')
+	return `${y}-${m}-${d}`
+}
 
 export default CalendarScreen
